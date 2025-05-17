@@ -7,6 +7,19 @@
 #include <fstream>
 #include <openssl/sha.h>
 #include <openssl/evp.h>
+#include <limits>
+
+//cl.exe compiler command
+//cl /EHsc password.cpp /I "C:\Program Files\OpenSSL-Win64\include" /Fe:password.exe /link /LIBPATH:"C:\Program Files\OpenSSL-Win64\lib\VC\x64\MD" libcrypto.lib
+//to-dos for next time
+  // MOST IMPORTANT: add presistent login support
+  // add password strength checker
+  // add username and password length checker
+  // password confirmation during registration
+  // old password cant be the same as new password
+  // username already exists
+
+#include <conio.h> // Windows-specific header for _getch()
 
 class SecurePasswordStorage {
 private:    
@@ -208,19 +221,162 @@ public:
 
 };
 
+//function for global hidden password input
+std::string getHiddenPassword(const std::string& prompt = "") {
+    std::string password;
+    char ch;
+
+    std::cout << prompt;
+
+    while ((ch = _getch()) != '\r') { // carriage return means Enter key
+        if (ch == '\b') { // backspace
+            if (!password.empty()) {
+                password.pop_back();
+                std::cout << "\b \b";
+            }
+        } else if (isprint(ch)) {
+            password += ch;
+            std::cout << '*';
+        }
+    }
+
+    std::cout << std::endl;
+    return password;
+    }
+
+//main function
+
 int main() {
 
-    SecurePasswordStorage storage(5);
-    std::string username, password;
-    std::cout << "Enter username: ";
-    std::cin >> username;
-    std::cout << "Enter password: ";
-    std::cin >> password;
-    storage.storePassword(username, password);
+    SecurePasswordStorage storage(10); //size of table, depending on number of users
+    std::string username, password, confirmpassword;
+    std::string input;
+    int choice;
+    bool loggedIn = false;
+    std::string currentuser;
+     std::cout << "Welcome to the login system!" << std::endl;
 
-    std::cout << "Password storage table: " << std::endl;
-    storage.printTable();
-    storage.createFile();
-    std::cout << username <<" verification is: "<< (storage.verifyPassword(username, password) ? "Valid" : "Invalid") << std::endl;
+    while(true) {
+        if(!loggedIn){
+           
+            std::cout << "1. Login\n";
+            std::cout << "2. Register\n";
+            std::cout << "3. Exit\n";
+            std::cout << "Enter choice: ";
+            std::getline(std::cin, input);
+        
+    if(input == "Exit" || input == "exit") {
+        std::cout << "Exiting program." << std::endl;
+        return 0;
+    }
+
+    std::stringstream ss(input);
+    if(!(ss >> choice)) {
+        std::cout << "Invalid input. Please enter an expected input." << std::endl;
+        continue;
+    }
+
+
+    switch(choice) {
+        case 1: //login
+            std::cout << "Enter username: ";
+            std::cin >> username;
+            std::cout << "Enter password: ";
+            password = getHiddenPassword();
+            if(storage.verifyPassword(username, password)) {
+                std::cout << "Login successful!" << std::endl;
+                loggedIn = true;
+                currentuser = username;
+            } else {
+                std::cout << "Such a login doesn't exist." << std::endl;
+            }
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            break;
+
+        case 2: //register
+            std::cout << "Enter username: ";
+            std::cin >> username;
+            std::cout << "Enter password: ";
+            password = getHiddenPassword();
+            if(storage.storePassword(username, password)) {
+                std::cout << "Registration successful!" << std::endl;
+                loggedIn = true;
+                currentuser = username;
+            } else {
+                std::cout << "Registration failed." << std::endl;
+            }
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            break;
+
+        case 3: //exit
+            std::cout << "Exiting program." << std::endl;
+            return 0;
+            break;
+
+        default: //invalid input
+            std::cout << "Please enter an expected input." << std::endl;
+            break;
+       }
+    }
+
+
+    else{ //user logged in
+        std::cout << "Welcome " << currentuser << std::endl;
+            std::cout << "1. Change password\n";
+            std::cout << "2. Delete account\n";
+            std::cout << "3. Logout\n";
+            std::cout << "4. Exit\n";
+            std::cout << "Enter choice: ";
+            std::getline(std::cin, input);
+
+        if(input == "exit") {
+            std::cout << "Exiting program." << std::endl;
+            storage.createFile(); // save data before exit
+            break;
+        }
+
+        std::stringstream ss(input);
+        if (!(ss >> choice)) {
+            std::cout << "Please enter a valid number." << std::endl;
+            continue;
+            }
+        
+        switch(choice) {
+        case 1: //change password
+            std::cout << "Enter new password: ";
+            password = getHiddenPassword();
+            if(storage.storePassword(currentuser, password)) {
+                std::cout << "Password changed successfully!" << std::endl;
+            } else {
+                std::cout << "Failed to change password." << std::endl;
+            }
+            break;
+
+        case 2: //delete account
+            if(storage.removeUser(currentuser)) {
+                std::cout << "Account deleted successfully!" << std::endl;
+                loggedIn = false;
+            } else {
+                std::cout << "Failed to delete account." << std::endl;
+            }
+            break;
+        
+        case 3: //logout
+            loggedIn = false;
+            std::cout << "Logged out successfully!" << std::endl;
+            break;
+
+        case 4: //exit program
+            std::cout << "Exiting program." << std::endl;
+            storage.createFile(); //save to file
+            return 0;
+            
+
+        default:
+            std::cout << "Invalid input. Please try again." << std::endl;
+            break;
+        }
+    }
+}
     return 0;
 }
