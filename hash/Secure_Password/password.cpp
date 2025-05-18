@@ -13,7 +13,6 @@
 //cl /EHsc password.cpp /I "C:\Program Files\OpenSSL-Win64\include" /Fe:password.exe /link /LIBPATH:"C:\Program Files\OpenSSL-Win64\lib\VC\x64\MD" libcrypto.lib
 //to-dos for next time
   // MOST IMPORTANT: add presistent login support
-  // add password strength checker
   // add username and password length checker
   // password confirmation during registration
   // old password cant be the same as new password
@@ -219,6 +218,26 @@ public:
         outFile.close();
     }
 
+    //function to check password strength, password must be longer than 8 chars, include at least one int and special char
+    bool strengthChecker(const std::string& input) {
+        if(input.length() < 8) {
+            std::cout << "Must be more than 8 characters. Not strong enough." << std::endl;
+            return false;
+        }
+        if(input.find_first_of("0123456789") == std::string::npos) {
+            std::cout << "Must contain at least one digit. Not strong enough." << std::endl;
+            return false;
+        }
+        if(input.find_first_of("!@#$%^&*()_+/") == std::string::npos) {
+            std::cout << "Must contain at least one special character. Not strong enough." << std::endl;
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+
 };
 
 //function for global hidden password input
@@ -281,6 +300,7 @@ int main() {
         case 1: //login
             std::cout << "Enter username: ";
             std::cin >> username;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Enter password: ";
             password = getHiddenPassword();
             if(storage.verifyPassword(username, password)) {
@@ -296,8 +316,15 @@ int main() {
         case 2: //register
             std::cout << "Enter username: ";
             std::cin >> username;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Enter password: ";
             password = getHiddenPassword();
+
+            //checking password strength
+            if(storage.strengthChecker(password) == false)  {
+                break;
+            }  
+
             if(storage.storePassword(username, password)) {
                 std::cout << "Registration successful!" << std::endl;
                 loggedIn = true;
