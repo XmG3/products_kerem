@@ -11,6 +11,7 @@
 using namespace std;
 
 class Hero;
+class Monster;
 
 class Campaign {
 private:

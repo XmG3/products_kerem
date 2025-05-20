@@ -37,25 +37,35 @@ void Player::create_campaign(string name, unsigned min_level, unsigned id){
 }
 
 void Player::join_friends_campaign(Player& pfriend, unsigned id) {
-    if(pfriend.campaign == nullptr || pfriend.campaign->get_min_level() > heroes.at(id)->get_level() || this->heroes.at(id) == nullptr) {
-        throw runtime_error("problem adding hero");
-    } else {
-        // Check if hero is already in another campaign and handle it
-        auto hero = heroes.at(id);
-        if (hero->is_in_campaign()) {
-            // Remove from current campaign first
-            hero->leave_campaign();
-        }
-        pfriend.campaign -> add_hero(heroes.at(id));
+    auto it = heroes.find(id);
+    if (it == heroes.end()) {
+        throw runtime_error("Hero not found.");
     }
+
+    if (pfriend.campaign == nullptr) {
+        throw runtime_error("Friend does not have a campaign.");
+    }
+
+    auto hero = it->second;
+    if(pfriend.campaign->get_min_level() > hero->get_level()) {
+        throw runtime_error("Hero level too low for friend's campaign.");
+    }
+
+    if (hero->is_in_campaign()) {
+    // Remove from current campaign first
+        hero->leave_campaign();
+    }
+    pfriend.campaign -> add_hero(hero);
 }
+
 
 void Player::transfer_campaign(Player& pfriend) {
     if(campaign == nullptr) {
         throw runtime_error("no campaign");
+    } else if (pfriend.campaign != nullptr) {
+        throw runtime_error("friend already has a campaign");
     } else {
         pfriend.campaign = move(campaign);
-        campaign = nullptr;
         }
     }
 
@@ -83,10 +93,10 @@ void Player::encounter_monster_in_campaign(unsigned hero_id, Monster& monster) {
 }
 
 ostream& Player::print_campaign(ostream& o) const {
-    if(campaign != nullptr) {
-        o << *campaign;
+    if(campaign == nullptr) {
+        o << "[]";
     } else {
-        o<< "[]";
+        o<< campaign ->get_name();
     }
     return o;
     }

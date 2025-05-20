@@ -13,6 +13,8 @@
 #include "hero_info.h"
 using namespace std;
 
+class Monster;
+
 class Player{
 private:
     string first_name;
