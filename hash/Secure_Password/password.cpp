@@ -13,7 +13,6 @@
 //cl /EHsc password.cpp /I "C:\Program Files\OpenSSL-Win64\include" /Fe:password.exe /link /LIBPATH:"C:\Program Files\OpenSSL-Win64\lib\VC\x64\MD" libcrypto.lib
 //to-dos for next time
   // MOST IMPORTANT: add presistent login support
-  // add username and password length checker
   // password confirmation during registration
   // old password cant be the same as new password
   // username already exists
@@ -237,6 +236,24 @@ public:
         }
     }
 
+    //function to check if a username is already in use
+    bool checkUsername(const std::string& username) {
+        int index = findIndex(username);
+        int i = 0;
+
+        while (i < size) {
+            int currentIndex = (index + i) % size;
+            if(entries[currentIndex].isEmpty) {
+                return false; //user not found
+            }
+            if(!entries[currentIndex].isDeleted && entries[currentIndex].username == username) {
+                return true; //username already exists
+            }
+            ++i;
+        }
+        return false;
+    }
+
 
 };
 
@@ -313,27 +330,48 @@ int main() {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             break;
 
-        case 2: //register
-            std::cout << "Enter username: ";
-            std::cin >> username;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Enter password: ";
-            password = getHiddenPassword();
+        case 2: { //register
+            bool usernameValid = false;
+            while (!usernameValid) {
+                std::cout << "Enter username: ";
+                std::cin >> username;
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-            //checking password strength
-            if(storage.strengthChecker(password) == false)  {
-                break;
-            }  
+                if(username.length() < 5 || username.length() > 12) {
+                    std::cout << "Username must be between 5 and 12 characters." << std::endl;
+                    continue;
+                }
+                if(storage.checkUsername(username)) {
+                    std::cout << "Username already exists. Please use another one." << std::endl;
+                    continue;
+                }
+
+                usernameValid = true;
+            }
+
+            bool passwordValid = false;
+            while(!passwordValid) {
+                std::cout << "Enter password: ";
+                password = getHiddenPassword();
+
+                //checking password strength
+                if(storage.strengthChecker(password) == false)  {
+                    continue;;
+                }  
+                passwordValid = true;
+            }
 
             if(storage.storePassword(username, password)) {
                 std::cout << "Registration successful!" << std::endl;
                 loggedIn = true;
                 currentuser = username;
+                break;
             } else {
                 std::cout << "Registration failed." << std::endl;
             }
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             break;
+        }
 
         case 3: //exit
             std::cout << "Exiting program." << std::endl;
@@ -348,7 +386,7 @@ int main() {
 
 
     else{ //user logged in
-        std::cout << "Welcome " << currentuser << std::endl;
+        std::cout << "Welcome " << currentuser << "!" << std::endl;
             std::cout << "1. Change password\n";
             std::cout << "2. Delete account\n";
             std::cout << "3. Logout\n";
