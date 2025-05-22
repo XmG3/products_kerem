@@ -22,12 +22,20 @@ bool Monster::is_dead() const {
         return health == 0;
     }
 
+string Monster::get_name() const {
+  	return name;
+}
+
 unsigned Monster::get_attack() const {
     return attack;
 }
 
+unsigned Monster::get_health() const {
+    return health;
+}
+
 ostream& operator<<(ostream& o, const Monster& m) {
-        o << "[" << m.name << ", " << m.health << "HP, " << m.attack << " ATK " << m.additional_information() << "]";
+        o << "[" << m.name << ", " << m.health << " HP, " << m.attack << " ATK" << m.additional_information() << "]";
         return o;
     }
 

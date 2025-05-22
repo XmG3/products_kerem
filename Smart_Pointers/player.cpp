@@ -70,10 +70,17 @@ void Player::transfer_campaign(Player& pfriend) {
     }
 
 unsigned Player::remove_dead() {
-    if (campaign) {
-        return campaign->remove_dead_and_expired();
+    unsigned count = 0;
+    auto it = heroes.begin();
+    while(it != heroes.end()) {
+        if(it->second->get_current_hp() == 0) {
+            it = heroes.erase(it);
+            ++count;
+        } else {
+            ++it;
+        }
     }
-    return 0;
+    return count;
 }
 
 shared_ptr<Hero> Player::get_hero(unsigned id) {
@@ -84,7 +91,7 @@ shared_ptr<Hero> Player::get_hero(unsigned id) {
     return nullptr;
 }
 
-void Player::encounter_monster_in_campaign(unsigned hero_id, Monster& monster) {
+void Player::campaign_encounter_monster(unsigned hero_id, Monster& monster) {
     if (campaign) {
         campaign->encounter_monster(hero_id, monster);
     } else {

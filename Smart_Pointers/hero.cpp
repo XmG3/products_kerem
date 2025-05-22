@@ -5,7 +5,7 @@ using namespace std;
 
 unsigned Hero::next_id = 0;
 
-Hero::Hero(string name, Hero_Class hero_class, Hero_Species hero_species, unsigned max_hp, map<string, unsigned> abilities): name(name), hero_class(hero_class), hero_species(hero_species), max_hp(max_hp), abilities(abilities), level(1) {
+Hero::Hero(string name, Hero_Class hero_class, Hero_Species hero_species, unsigned max_hp, map<string, unsigned> abilities): name(name), hero_class(hero_class), hero_species(hero_species), max_hp(max_hp), abilities(abilities){
   if (name.empty()) throw runtime_error("Name cant be empty.");
   if (max_hp < 1) throw runtime_error("max hp must be positive.");
   if (abilities.size() != 6) throw runtime_error("needs 6 ability scores");

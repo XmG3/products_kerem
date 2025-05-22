@@ -1,7 +1,7 @@
 #ifndef HERO_INFO_H
 #define HERO_INFO_H
-
 #include <iostream>
+
 using namespace std;
 
 enum class Hero_Class{BARBARIAN, BARD, CLERIC, DRUID, FIGHTER, MONK, PALADIN, RANGER, ROGUE, SORCERER, WARLOCK, WIZARD};

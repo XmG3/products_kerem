@@ -1,8 +1,6 @@
 #ifndef MONSTER_H
 #define MONSTER_H
-
 #include<iostream>
-#include<stdexcept>
 #include<string>
 using namespace std;
 
@@ -22,8 +20,12 @@ public:
     void take_damage(unsigned dmg);
     
     bool is_dead() const;
+  
+  	string get_name() const;
 
     unsigned get_attack() const;
+  
+  	unsigned get_health() const;
 
     virtual string additional_information() const = 0;
 

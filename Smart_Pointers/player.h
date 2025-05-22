@@ -38,7 +38,7 @@ unsigned remove_dead();
 
 shared_ptr<Hero> get_hero(unsigned id);
 
-void encounter_monster_in_campaign(unsigned id, Monster& m);
+void campaign_encounter_monster(unsigned id, Monster& m);
 
 ostream& print_campaign(ostream& o) const;
 
